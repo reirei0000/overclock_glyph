@@ -4,14 +4,17 @@
     <script type="importmap">
       {
         "imports": {
-          "three": "https://unpkg.com/three@0.152.2/build/three.module.js",
-          "three/addons/": "https://unpkg.com/three@0.152.2/examples/jsm/"
+          "three": "https://unpkg.com/three@0.159.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.159.0/examples/jsm/"
         }
       }
     </script>
     <script type="module">
       import * as THREE from "three";
       import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+      import { Line2 } from "three/addons/lines/Line2.js";
+      import { LineMaterial } from "three/addons/lines/LineMaterial.js";
+      import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 
       // サイズを指定
       const width = 960;
@@ -43,6 +46,7 @@
       wire.material.transparent = true;
       scene.add( wire );
 
+      // 小さい箱を作成
       const geometryc = new THREE.BoxGeometry(200, 200, 200);
       const wireframec = new THREE.WireframeGeometry(geometryc);
       const wirec = new THREE.LineSegments(wireframec);
@@ -51,25 +55,25 @@
       wirec.material.transparent = true;
       scene.add( wirec );
 
-      //const materialb = new THREE.MeshNormalMaterial();
-      //const box = new THREE.Mesh(geometryb, materialb);
-      //scene.add(box);
-      
-      const points = [];
-      points.push( new THREE.Vector3( -200,  200,  200 ) );
-      points.push( new THREE.Vector3( -100,  100, -100 ) );
-      points.push( new THREE.Vector3( -200,  200, -200 ) );
-      points.push( new THREE.Vector3(  200,  200, -200 ) );
-      points.push( new THREE.Vector3(  100,  100,  100 ) );
-      points.push( new THREE.Vector3(  200, -200,  200 ) );
-      points.push( new THREE.Vector3(  100, -100,  100 ) );
-      points.push( new THREE.Vector3(  200, -200, -200 ) );
-      points.push( new THREE.Vector3(    0,    0,    0 ) );
-      //points.push( new THREE.Vector3( 100, 0, 0 ) );
+      const points = [
+      -200,  200,  200,
+      -100,  100, -100,
+      -200,  200, -200,
+       200,  200, -200,
+       100,  100,  100,
+       200, -200,  200,
+       100, -100,  100,
+       200, -200, -200,
+         0,    0,    0,
+      ];
 
-      const geometry = new THREE.BufferGeometry().setFromPoints( points );
-      const material = new THREE.LineBasicMaterial( { color: 0xffffff } );
-      const line = new THREE.Line( geometry, material );
+      const geometry = new LineGeometry();
+      geometry.setPositions(points)
+      const material = new LineMaterial( {
+            color: 0xffffff,
+            linewidth: 0.01,
+      } );
+      const line = new Line2( geometry, material );
       scene.add( line );
 
 
@@ -79,18 +83,12 @@
       var rot = 0
       function tick() {
 
-        wire.rotation.x = 45 * Math.PI / 180
-        wirec.rotation.x = 45 * Math.PI / 180
-        line.rotation.x = 45 * Math.PI / 180
+        wire.rotation.x = 55 * Math.PI / 180
+        wirec.rotation.x = 55 * Math.PI / 180
+        line.rotation.x = 55 * Math.PI / 180
         wire.rotation.z = -45 * Math.PI / 180
         wirec.rotation.z = -45 * Math.PI / 180
         line.rotation.z = -45 * Math.PI / 180
-        rot -= 0.5
-        const radian = rot * Math.PI / 180;
-        // camera.position.x = 1000 * Math.sin(radian);
-        // camera.position.y = 200
-        // camera.position.z = 1000 * Math.cos(radian);
-        // camera.lookAt(new THREE.Vector3(0, 0, 0));
 
         renderer.render(scene, camera); // レンダリング
 
