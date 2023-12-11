@@ -56,25 +56,35 @@
       scene.add( wirec );
 
       const points = [
-      -200,  200,  200,
-      -100,  100, -100,
-      -200,  200, -200,
-       200,  200, -200,
-       100,  100,  100,
-       200, -200,  200,
-       100, -100,  100,
-       200, -200, -200,
+      [
+       200,  200,  200,
+       100,  100, -100,
+       100, -100, -100,
          0,    0,    0,
+      -100, -100,  100,
+      -100,  100,  100,
+      -200, -200, -200,
+      ]
       ];
 
-      const geometry = new LineGeometry();
-      geometry.setPositions(points)
-      const material = new LineMaterial( {
+      var lines = [];
+
+      var i = 0;
+      console.log(points[i])
+      for (const l of points) {
+        console.log(l)
+        const geometry = new LineGeometry();
+        geometry.setPositions(points[i])
+        const material = new LineMaterial( {
             color: 0xffffff,
             linewidth: 0.01,
-      } );
-      const line = new Line2( geometry, material );
-      scene.add( line );
+        } );
+        const line = new Line2( geometry, material );
+        scene.add( line );
+
+        lines.push(line)
+        i++;
+      }
 
 
       tick();
@@ -84,11 +94,15 @@
       function tick() {
 
         wire.rotation.x = 55 * Math.PI / 180
-        wirec.rotation.x = 55 * Math.PI / 180
-        line.rotation.x = 55 * Math.PI / 180
         wire.rotation.z = -45 * Math.PI / 180
+
+        wirec.rotation.x = 55 * Math.PI / 180
         wirec.rotation.z = -45 * Math.PI / 180
-        line.rotation.z = -45 * Math.PI / 180
+
+        for (const l of lines) {
+          l.rotation.x = 55 * Math.PI / 180
+          l.rotation.z = -45 * Math.PI / 180
+        }
 
         renderer.render(scene, camera); // レンダリング
 
