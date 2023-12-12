@@ -130,6 +130,14 @@
   </head>
   <body>
     <canvas id="myCanvas"></canvas>
-    <a href="index.html">Back to Index</a>
+    </br><h2 id=glyphname></h2>
+    </br><a href="index.html">Back to Index</a>
   </body>
+  <script>
+    let url = new URL(window.location.href);
+    let params = url.searchParams;
+
+    const name = params.get("n");
+    document.querySelector("h2").innerHTML = name;
+  </script>
 </html>
