@@ -17,25 +17,60 @@
       import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 
       const points = {
-        'A': [-200,  200,  200],  // a
-        'B': [ 200,  200,  200],  // b
-        'C': [ 200,  200, -200],  // c
-        'D': [ 200, -200, -200],  // d
-        'E': [-200, -200, -200],  // E
-        'F': [-200, -200,  200],  // F
-        'G': [ 200, -200,  200],  // G
-        'H': [-200,  200, -200],  // g
+        'A': [-200,  200, -200],  // g
+        'B': [ 200,  200, -200],  // c
+        'C': [ 200, -200, -200],  // d
+        'D': [ 200, -200,  200],  // G
+        'E': [-200, -200,  200],  // F
+        'F': [-200,  200,  200],  // a
+        'G': [ 200,  200,  200],  // b
+        'H': [-200, -200, -200],  // E
         'Z': [ 0,  0,  0],
-        'a': [-100,  100,  100],  // a
-        'b': [ 100,  100,  100],  // b
-        'c': [ 100,  100, -100],  // c
-        'd': [ 100, -100, -100],  // d
-        'e': [-100, -100, -100],  // E
-        'f': [-100, -100,  100],  // F
-        'g': [ 100, -100,  100],  // G
-        'h': [-100,  100, -100],  // g
+        'a': [-100,  100, -100],  // g
+        'b': [ 100,  100, -100],  // c
+        'c': [ 100, -100, -100],  // d
+        'd': [ 100, -100,  100],  // G
+        'e': [-100, -100,  100],  // F
+        'f': [-100,  100,  100],  // a
+        'g': [ 100,  100,  100],  // b
+        'h': [-100, -100, -100],  // E
         'z': [ 0,  0,  0],
       }
+
+      const drawText = message => {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        context.font = "bold 64px Helvetica";
+        context.fillStyle = "rgba(255, 255, 255, 0.8)";
+        context.fillText(message, 0, 64);
+
+        const texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+
+        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+
+        const sprite = new THREE.Sprite(spriteMaterial);
+
+        sprite.center.set(0, 0.5);
+        sprite.scale.set(200, 100, 100);
+
+        return sprite;
+      };
+
+      const drawLabel = (text, position) => {
+        const label = drawText(text);
+
+        label.position.set(position.x, position.y, position.z);
+        return label
+      };
+
+      const onChangeView = (v) => {
+        console.log(v);
+      }
+
+      // obj
+      var objs = []
 
       // サイズを指定
       const width = 540;
@@ -53,28 +88,22 @@
       const scene = new THREE.Scene();
 
       // カメラを作成
-      const camera = new THREE.PerspectiveCamera(45, width / height);
-      camera.position.set(0, 0, +1000);
+      const camera = new THREE.PerspectiveCamera(55, width / height, 0.01, 5000);
+      camera.position.set(600, 600, 600);
       //camera変数の定義後
       const controls = new OrbitControls(camera, canvasElement);
 
       // 箱を作成
-      const geometryb = new THREE.BoxGeometry(400, 400, 400);
-      const wireframe = new THREE.WireframeGeometry(geometryb);
-      const wire = new THREE.LineSegments(wireframe);
-      wire.material.depthTest = false;
-      wire.material.opacity = 0.25;
-      wire.material.transparent = true;
-      scene.add( wire );
-
-      // 小さい箱を作成
-      const geometryc = new THREE.BoxGeometry(200, 200, 200);
-      const wireframec = new THREE.WireframeGeometry(geometryc);
-      const wirec = new THREE.LineSegments(wireframec);
-      wirec.material.depthTest = false;
-      wirec.material.opacity = 0.25;
-      wirec.material.transparent = true;
-      scene.add( wirec );
+      for (const s of [400, 200]) {
+        const geometry = new THREE.BoxGeometry(s, s, s);
+        const wireframe = new THREE.WireframeGeometry(geometry);
+        const wire = new THREE.LineSegments(wireframe);
+        wire.material.depthTest = false;
+        wire.material.opacity = 0.25;
+        wire.material.transparent = true;
+        scene.add( wire );
+        objs.push(wire)
+      }
 
       let url = new URL(window.location.href);
       let params = url.searchParams;
@@ -82,16 +111,12 @@
       const glyphs = params.get("d");
       var line_list = glyphs.split("_");
 
-      var lines = [];
-      var i = 0;
-      console.log(points[i])
       for (const ll of line_list) {
         const geometry = new LineGeometry();
         var pp = []
         for (const l of [...ll]) {
             pp.push(...points[l])
         }
-        console.log(pp)
         geometry.setPositions(pp)
         const material = new LineMaterial( {
             color: 0xffffff,
@@ -99,33 +124,32 @@
         } );
         const line = new Line2( geometry, material );
         scene.add( line );
-
-        lines.push(line)
-        i++;
+        objs.push(line)
       }
 
+      // Dot
+      for (const p of Object.keys(points)) {
+        pp = points[p]
+        const geometry = new THREE.SphereGeometry( 10, 5, 5 );
+        const material = new THREE.MeshBasicMaterial( { color: 0x6666ff } ); 
+        const sphere = new THREE.Mesh( geometry, material );
+        scene.add( sphere );
+        objs.push(sphere)
 
-      tick();
+        sphere.position.set(pp[0], pp[1], pp[2])
 
-      // 毎フレーム時に実行されるループイベントです
-      var rot = 0
+        const label = drawLabel(p, new THREE.Vector3(pp[0], pp[1], pp[2]))
+        // scene.add(label);
+      }
+
       function tick() {
-
-        wire.rotation.x = -55 * Math.PI / 180
-        wire.rotation.z = -45 * Math.PI / 180
-
-        wirec.rotation.x = -55 * Math.PI / 180
-        wirec.rotation.z = -45 * Math.PI / 180
-
-        for (const l of lines) {
-          l.rotation.x = -55 * Math.PI / 180
-          l.rotation.z = -45 * Math.PI / 180
-        }
-
+        // 毎フレーム時に実行されるループイベントです
         renderer.render(scene, camera); // レンダリング
 
         requestAnimationFrame(tick);
       }
+
+      tick()
     </script>
   </head>
   <body>
